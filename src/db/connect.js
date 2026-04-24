@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 /**
  * TODO: Connect to MongoDB
@@ -9,4 +9,14 @@ import mongoose from 'mongoose';
  */
 export async function connectDB(uri) {
   // Your code here
+  if (!uri) {
+    throw new Error("MongoDB URI is required");
+  }
+  try {
+     await mongoose.connect(uri);
+     return mongoose.connection;  // mongoose gives access to this after connection - it gives event listeners, connection states, DB-level control
+  } catch (error) {
+    console.error(`Error: ${error.message}`);
+    process.exit(1);
+  }
 }

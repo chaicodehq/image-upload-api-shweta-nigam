@@ -1,9 +1,9 @@
-import sharp from 'sharp';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import sharp from "sharp";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const THUMBNAILS_DIR = path.join(__dirname, '../../uploads/thumbnails');
+const THUMBNAILS_DIR = path.join(__dirname, "../../uploads/thumbnails");
 
 /**
  * TODO: Generate thumbnail for uploaded image
@@ -36,6 +36,23 @@ const THUMBNAILS_DIR = path.join(__dirname, '../../uploads/thumbnails');
  */
 export async function generateThumbnail(filename) {
   // Your code here
+  const inputPath = path.join(__dirname, "../../uploads", filename);
+
+  const baseName = filename.replace(/\.\w+$/, '.jpg' );
+
+  const thumbnailName = `thumb-${baseName}`;
+
+  const outputPath = path.join(THUMBNAILS_DIR, thumbnailName);
+
+  await sharp(inputPath)
+    .resize(200, 200, {
+      fit: `inside`,
+      withoutEnlargement: true,
+    })
+    .jpeg({ quality: 80 })
+    .toFile(outputPath);
+
+  return thumbnailName;
 }
 
 /**
@@ -59,4 +76,16 @@ export async function generateThumbnail(filename) {
  */
 export async function getImageDimensions(filepath) {
   // Your code here
+  try {
+    const metadata = await sharp(filepath).metadata();
+
+    const { width, height } = metadata;
+
+    return {
+      width,
+      height,
+    };
+  } catch (error) {
+    throw new Error("Failed to read image metadata");
+  }
 }

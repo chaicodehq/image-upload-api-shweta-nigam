@@ -28,9 +28,66 @@ import mongoose from 'mongoose';
 const imageSchema = new mongoose.Schema(
   {
     // Your schema fields here
+    originalName: {
+      type:String,
+      trim:true,
+      maxlength:255,
+      required:true
+    },
+    filename:{
+      type:String,
+      trim:true,
+      required:true,
+      unique:true
+    },
+    mimetype:{
+       type:String,
+      trim:true,
+      required:true,
+      enum:['image/jpeg', 'image/png', 'image/gif']
+    },
+    size:{
+      type:Number,
+      required:true,
+      min:1,
+      max:5 * 1024 * 1024
+    },
+    width:{
+      type:Number,
+      required:true,
+      min:1
+    },
+    height:{
+      type:Number,
+      required:true,
+      min:1
+    },
+    thumbnailFilename: {
+      type:String,
+      required:true
+    },
+    description:{
+      type:String,
+      trim:true,
+      maxlength:500,
+      default:''
+    },
+    tags:{
+      type:[String],
+      validate:{
+        validator: (arr) => arr.length <= 10,
+        message: 'Cannot have more than 10 tags'
+      },
+      default:[]
+    },
+    uploadDate: {
+      type: Date,
+      default: Date.now
+    }
   },
   {
     // Schema options here
+    timestamps:true
   }
 );
 
@@ -39,5 +96,11 @@ const imageSchema = new mongoose.Schema(
 // imageSchema.index({ mimetype: 1, uploadDate: -1 });
 // imageSchema.index({ originalName: 'text', description: 'text' });
 
+imageSchema.index({uploadDate:-1}) // Fast sorting (latest first)
+imageSchema.index({mimetype:1, uploadDate : -1}) // Filter + sort
+imageSchema.index({originalName: "text", description: "text"})  // Search like Google
+
 // TODO: Create and export the Image model
 // export const Image = mongoose.model('Image', imageSchema);
+
+export const Image = mongoose.model("Image", imageSchema)
