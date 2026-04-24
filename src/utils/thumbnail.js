@@ -38,18 +38,25 @@ export async function generateThumbnail(filename) {
   // Your code here
   const inputPath = path.join(__dirname, "../../uploads", filename);
 
-  const baseName = filename.replace(/\.\w+$/, '.jpg' );
+  const baseName = filename.replace(/\.\w+$/, ".jpg");
 
   const thumbnailName = `thumb-${baseName}`;
 
   const outputPath = path.join(THUMBNAILS_DIR, thumbnailName);
 
+  // await sharp(inputPath)
+  //   .resize(200, 200, {
+  //     fit: `inside`,
+  //     withoutEnlargement: true,
+  //   })
+  //   .jpeg({ quality: 50 })
+  //   .toFile(outputPath);
+
   await sharp(inputPath)
-    .resize(200, 200, {
-      fit: `inside`,
-      withoutEnlargement: true,
+    .resize(100, 100, {
+      fit: "cover", // force resize
     })
-    .jpeg({ quality: 80 })
+    .jpeg({ quality: 30 }) // aggressive compression
     .toFile(outputPath);
 
   return thumbnailName;

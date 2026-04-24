@@ -22,10 +22,10 @@ export async function uploadImage(req, res, next) {
   try {
     // Your code here
     if (req.fileValidationError) {
-  return res.status(400).json({
-    error: { message: req.fileValidationError },
-  });
-}
+      return res.status(400).json({
+        error: { message: req.fileValidationError },
+      });
+    }
 
     if (!req.file) {
       return res.status(400).json({ error: { message: "No file uploaded" } });
@@ -105,14 +105,15 @@ export async function listImages(req, res, next) {
       sortOrder = "desc",
     } = req.query;
 
-    page = parseInt(page);
-    limit = Math.min(parseInt(limit), 50);
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 10;
+    limit = Math.min(limit, 50);
 
     const query = {}; // This will store filters for MongoDB
 
     if (search) {
       query.$or = [
-        { originalname: { $regex: search, $options: "i" } },
+        { originalName: { $regex: search, $options: "i" } },
         { description: { $regex: search, $options: "i" } },
       ];
     }
@@ -155,22 +156,16 @@ export async function getImage(req, res, next) {
     const id = req.params.id;
 
     if (!id) {
-      return res.status(400).json({ message: "Image not found" });
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid ID format" });
+      return res.status(400).json({ error: { message: "Image not found" } });
     }
 
     const image = await Image.findById(id);
 
     if (!image) {
-      return res.status(404).json({ message: "Image not found" });
+      return res.status(404).json({ error: { message: "Image not found" } });
     }
 
-    return res
-      .status(200)
-      .json({ message: "Image fetched successfully", image });
+    return res.status(200).json(image);
   } catch (error) {
     next(error);
   }
@@ -207,13 +202,13 @@ export async function downloadImage(req, res, next) {
     const filePath = path.join(__dirname, "../../uploads", image.filename);
 
     if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ error: { message: "file not found" } });
+      return res.status(404).json({ error: { message: "File not found" } });
     }
 
     res.setHeader("Content-Type", image.mimetype);
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename="${image.originalname}"`,
+      `attachment; filename="${image.originalName}"`,
     );
 
     return res.sendFile(filePath);
@@ -282,7 +277,7 @@ export async function deleteImage(req, res, next) {
       return res.status(404).json({ error: { message: "Image not found" } });
     }
 
-    const filePath = path.join(__dirname, "../../uploads".image.filename);
+    const filePath = path.join(__dirname, "../../uploads", image.filename);
     try {
       fs.unlinkSync(filePath);
     } catch (error) {
